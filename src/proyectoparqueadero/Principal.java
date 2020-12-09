@@ -61,7 +61,7 @@ public class Principal extends javax.swing.JFrame {
 
         PanelMenu.setBackground(new java.awt.Color(2, 91, 102));
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/logo parqueadero.png"))); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/logo_parqueadero.png"))); // NOI18N
         jLabel1.setText("jLabel1");
 
         jLabel2.setFont(new java.awt.Font("Segoe UI Semilight", 0, 36)); // NOI18N

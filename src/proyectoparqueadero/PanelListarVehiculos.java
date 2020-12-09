@@ -8,7 +8,8 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
-import Base_de_Datos.conexion;
+import basedatos.Conexion;
+import basedatos.Database;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,7 +22,7 @@ public class PanelListarVehiculos extends javax.swing.JPanel {
      */
     
     //INSTANCIAS Y VARIABLES
-    conexion objcon = new conexion();
+    Conexion objcon = new Conexion();
     String sql;
     String tipoVehiculo = "", estado = "", fecha = "";
     DefaultTableModel modelo;

@@ -5,12 +5,18 @@
  */
 package proyectoparqueadero;
 
-import Base_de_Datos.conexion;
+import basedatos.Conexion;
+import basedatos.entidades.Vehiculo;
+import basedatos.dao.VehiculoDao;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalField;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -24,24 +30,24 @@ public class PanelRetirarVehiculo extends javax.swing.JPanel {
     /**
      * Creates new form PanelRetirarVehiculo
      */
-    
     //INSTANCIAS
-    conexion objcon = new conexion();
+    private final VehiculoDao vehiculoDao = new VehiculoDao();
+    Conexion objcon = new Conexion();
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    Date date = new Date();
-    
+    //Date date =new Date();
+
     //VARIABLES
-    String fechaHora, horaentrada,sql;
+    String fechaHora, horaentrada, sql;
     Date Datehoraentrada;
     int horasACobrar;
     int valorAPagar;
     int confirmacion;
     String propietario;
     String tipoVehiculo;
-    
+
     public PanelRetirarVehiculo() {
         initComponents();
-        
+
         objcon.crearConexion();
 
     }
@@ -116,69 +122,97 @@ public class PanelRetirarVehiculo extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void JB_RetirarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JB_RetirarActionPerformed
-            
-            fechaHora = dateFormat.format(date);
-            
+        final Vehiculo vehiculo = vehiculoDao.obtener(tfPlacaRetiro.getText());
+        if (vehiculo == null) {
+            JOptionPane.showMessageDialog(null, "Vehiculo no encontrado. Es posible que no existe un vehiculo con esa placa");
+        } else if (vehiculo.getEstado().equals("Disponible")) {
+            int respuesta = JOptionPane.showConfirmDialog(null, "Propietario: " + vehiculo.getPropietario() + ", Tipo Vehiculo: " + vehiculo.getTipoVehiculo() + ", Fecha Entrada: " + dateFormat.format(new Date(vehiculo.getHoraEntrada().toEpochMilli())), "Confirmar Datos", JOptionPane.YES_NO_OPTION);
+
+            if (respuesta == JOptionPane.YES_OPTION) {
+                final Instant instant = Instant.now();
+                vehiculo.setHoraSalida(instant);
+                vehiculo.setEstado("No Disponible");
+                vehiculo.setValorPagado(obtenerValorAPagar(vehiculo, instant));
+
+                if (vehiculoDao.modificar(vehiculo)) {
+                    limpiarCampos();
+                    JOptionPane.showMessageDialog(null, "Vehiculo retirado");
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Este vehiculo ya ha sido retirado");
+        }
+        /*fechaHora = dateFormat.format(date);
+
         try {
             // TODO add your handling code here:
-            
+
             sql = "SELECT horaentrada, tipovehiculo,propietario from vehiculos WHERE placa ='" + tfPlacaRetiro.getText() + "' AND estado = 'Disponible'";
             objcon.ejecutarSQLSelect(sql);
-            
+
             objcon.resultado.first();
-            
+
             //OBTENCION DE VALORES PARA LA CONFIRMACION
             propietario = objcon.resultado.getString(3);
             horaentrada = objcon.resultado.getString(1);
             tipoVehiculo = objcon.resultado.getString(2);
-            
-            confirmacion = JOptionPane.showConfirmDialog(null, "Validación de datos\n\n Propietario: " + propietario + 
-                                                               "\n Tipo Vehiculo: " + tipoVehiculo + "\n Fecha Entrada: " + horaentrada, "Confirmación", JOptionPane.YES_NO_OPTION);
-        
-            if(confirmacion == 0){
-                
-                
+
+            confirmacion = JOptionPane.showConfirmDialog(null, "Validación de datos\n\n Propietario: " + propietario
+                    + "\n Tipo Vehiculo: " + tipoVehiculo + "\n Fecha Entrada: " + horaentrada, "Confirmación", JOptionPane.YES_NO_OPTION);
+
+            if (confirmacion == 0) {
+
                 Datehoraentrada = dateFormat.parse(horaentrada);
-                horasACobrar = (int) ((date.getTime()-Datehoraentrada.getTime())/60000)/60;
+                horasACobrar = (int) ((date.getTime() - Datehoraentrada.getTime()) / 60000) / 60;
 
                 System.out.println(horasACobrar);
-                
-                if(objcon.resultado.getString(2).equals("Automovil")){
 
-                    valorAPagar=horasACobrar*10;
+                if (objcon.resultado.getString(2).equals("Automovil")) {
 
-                }else if(objcon.resultado.getString(2).equals("Motocicleta")){
+                    valorAPagar = horasACobrar * 10;
 
-                     valorAPagar=horasACobrar*5;
+                } else if (objcon.resultado.getString(2).equals("Motocicleta")) {
+
+                    valorAPagar = horasACobrar * 5;
 
                 }
 
-
-                sql = "UPDATE vehiculos SET horasalida='" + fechaHora + "',estado= 'No Disponible', valorpagado= " 
-                      + valorAPagar + " WHERE placa='" + tfPlacaRetiro.getText() + "' AND estado='Disponible'";
+                sql = "UPDATE vehiculos SET horasalida='" + fechaHora + "',estado= 'No Disponible', valorpagado= "
+                        + valorAPagar + " WHERE placa='" + tfPlacaRetiro.getText() + "' AND estado='Disponible'";
 
                 objcon.ejecutarSQL(sql);
 
-                int respuesta = JOptionPane.showConfirmDialog(null,"Valor a pagar:  $"+valorAPagar+"'\nDesea Imprimir Recibo","Salida de vehiculo",JOptionPane.YES_NO_OPTION);
-         
+                int respuesta = JOptionPane.showConfirmDialog(null, "Valor a pagar:  $" + valorAPagar + "'\nDesea Imprimir Recibo", "Salida de vehiculo", JOptionPane.YES_NO_OPTION);
+
             }
-            
-            
+
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "El vehiculo no se encuentra en el parqueadero, por favor revise la placa ingresada");
-            
+
             Logger.getLogger(PanelRetirarVehiculo.class.getName()).log(Level.SEVERE, null, ex);
-            
+
         } catch (ParseException ex) {
             Logger.getLogger(PanelRetirarVehiculo.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
     }//GEN-LAST:event_JB_RetirarActionPerformed
 
     private void tfPlacaRetiroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfPlacaRetiroActionPerformed
         // TODO add your handling code here:
-      
+
     }//GEN-LAST:event_tfPlacaRetiroActionPerformed
 
+    private void limpiarCampos() {
+        tfPlacaRetiro.setText("");
+    }
+
+    private double obtenerValorAPagar(Vehiculo vehiculo, Instant instant) {
+        long deltaHoras = (instant.toEpochMilli() - vehiculo.getHoraEntrada().toEpochMilli()) / 60000 / 60;
+        if (vehiculo.getTipoVehiculo().equals("Automovil")) {
+            return deltaHoras * 10;
+        } else {
+            return deltaHoras * 5;
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button JB_Retirar;

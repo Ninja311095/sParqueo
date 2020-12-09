@@ -1,4 +1,3 @@
-
 package proyectoparqueadero;
 
 //import com.itextpdf.kernel.geom.PageSize;
@@ -7,34 +6,39 @@ package proyectoparqueadero;
 //import com.itextpdf.layout.Document;
 //import com.itextpdf.layout.border.Border;
 //import com.itextpdf.layout.element.Paragraph;
-
-import Base_de_Datos.conexion;
+import basedatos.Conexion;
+import basedatos.Database;
+import basedatos.entidades.Vehiculo;
+import basedatos.dao.VehiculoDao;
+import java.sql.Date;
+import java.sql.Timestamp;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 public class PanelIngresarVehiculo extends javax.swing.JPanel {
 
-    
-        //VARIABLES 
+    //VARIABLES 
+    private final VehiculoDao vehiculoDao = new VehiculoDao();
     String fechaHora = "";
     String clasevehiculo = "";
     String sql;
-    
-       //INSTANCIAS
+
+    //INSTANCIAS
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    Date date =new Date();
+    //Date date =new Date();
     static final String DEST = "proyectoparqueadero/hello_world.pdf";
-    conexion objbd = new conexion();
-    
+    Conexion objbd = new Conexion();
+
     public PanelIngresarVehiculo() {
         initComponents();
-
+        Database.obtenerInstancia();
         objbd.crearConexion();
     }
- 
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -56,8 +60,10 @@ public class PanelIngresarVehiculo extends javax.swing.JPanel {
         JLtitulo.setText("Modulo de Ingreso de vehiculos al parqueo");
 
         tfPlaca.setFont(new java.awt.Font("Segoe UI Symbol", 1, 24)); // NOI18N
+        tfPlaca.setName("Placa"); // NOI18N
 
         tfPropietario.setFont(new java.awt.Font("Segoe UI Symbol", 0, 12)); // NOI18N
+        tfPropietario.setName("Nombre Propietario"); // NOI18N
 
         jLplaca.setText("Placa");
 
@@ -127,32 +133,39 @@ public class PanelIngresarVehiculo extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-     
-    private void JB_registrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JB_registrarActionPerformed
 
-        fechaHora = dateFormat.format(date);
-        
+    private void JB_registrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JB_registrarActionPerformed
+        if (validarCampos()) {
+            final Vehiculo v = generarVehiculo();
+            int idNuevoVehiculo = vehiculoDao.agregar(v);
+            System.out.println(idNuevoVehiculo);
+            if (idNuevoVehiculo > 0) {
+                limpiarCampos();
+                JOptionPane.showInternalMessageDialog(null, "Vehiculo registrado");
+            }
+        }
+
+        /*fechaHora = dateFormat.format(date);
+
         if (rbAuto.isSelected()) {
             clasevehiculo = "Automovil";
         }
         if (rbMoto.isSelected()) {
             clasevehiculo = "Motocicleta";
         }
-        
+
         String sql = "INSERT INTO vehiculos (placa, propietario,tipovehiculo,horaentrada,estado) VALUES ('"
                 + tfPlaca.getText() + "','" + tfPropietario.getText() + "','" + clasevehiculo + "','"
                 + fechaHora + "','Disponible')";
-        
+
         objbd.ejecutarSQL(sql);
-        
+
         tfPlaca.setText("");
         tfPropietario.setText("");
         clasevehiculo = "";
+
+        JOptionPane.showMessageDialog(null, "Vehiculo registrado exitosamente");*/
         
-        JOptionPane.showMessageDialog(null,"Vehiculo registrado exitosamente");
-        
-        
-     
 //           String dest = "C:/reportes/sample.pdf";
 //        try {
 
@@ -204,8 +217,60 @@ public class PanelIngresarVehiculo extends javax.swing.JPanel {
 //		ex.printStackTrace();
 //	  }
 
-     
     }//GEN-LAST:event_JB_registrarActionPerformed
+
+    private void limpiarCampos() {
+        Object[] campos = {tfPlaca, tfPropietario};
+
+        for (Object campo : campos) {
+            if (campo instanceof JTextField) {
+                ((JTextField) campo).setText("");
+            }
+        }
+    }
+
+    /**
+     * *
+     * Comprueba que los campos tengan la informacion correcta
+     *
+     * @return true si todo esta bien, false en caso de que no
+     */
+    private boolean validarCampos() {
+        Object[] campos = {tfPlaca, tfPropietario};
+
+        for (Object campo : campos) {
+            if (campo instanceof JTextField && ((JTextField) campo).getText().isBlank()) {
+                String nombreCampo = ((JTextField) campo).getName();
+                JOptionPane.showMessageDialog(null, "El campo " + nombreCampo + " debe estar lleno");
+                return false;
+            }
+        }
+
+        if (!rbMoto.isSelected() && !rbAuto.isSelected()) {
+            JOptionPane.showInternalMessageDialog(null, "Primero debe elegir el tipo de vehiculo");
+            return false;
+        }
+
+        return true;
+    }
+
+    private Vehiculo generarVehiculo() {
+        String tipoVehiculo = "";
+
+        if (rbAuto.isSelected()) {
+            tipoVehiculo = "Automovil";
+        }
+        if (rbMoto.isSelected()) {
+            tipoVehiculo = "Motocicleta";
+        }
+
+        return new Vehiculo(
+                tfPlaca.getText(),
+                tfPropietario.getText(),
+                tipoVehiculo,
+                Instant.now(),
+                "Disponible");
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
