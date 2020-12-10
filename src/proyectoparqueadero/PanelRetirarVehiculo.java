@@ -14,9 +14,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalField;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -64,6 +61,7 @@ public class PanelRetirarVehiculo extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(453, 400));
 
         tfPlacaRetiro.setFont(new java.awt.Font("Segoe UI Symbol", 1, 24)); // NOI18N
+        tfPlacaRetiro.setName("Placa"); // NOI18N
         tfPlacaRetiro.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tfPlacaRetiroActionPerformed(evt);
@@ -104,7 +102,7 @@ public class PanelRetirarVehiculo extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(190, 190, 190)
                         .addComponent(JB_Retirar, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -122,26 +120,7 @@ public class PanelRetirarVehiculo extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void JB_RetirarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JB_RetirarActionPerformed
-        final Vehiculo vehiculo = vehiculoDao.obtener(tfPlacaRetiro.getText());
-        if (vehiculo == null) {
-            JOptionPane.showMessageDialog(null, "Vehiculo no encontrado. Es posible que no existe un vehiculo con esa placa");
-        } else if (vehiculo.getEstado().equals("Disponible")) {
-            int respuesta = JOptionPane.showConfirmDialog(null, "Propietario: " + vehiculo.getPropietario() + ", Tipo Vehiculo: " + vehiculo.getTipoVehiculo() + ", Fecha Entrada: " + dateFormat.format(new Date(vehiculo.getHoraEntrada().toEpochMilli())), "Confirmar Datos", JOptionPane.YES_NO_OPTION);
-
-            if (respuesta == JOptionPane.YES_OPTION) {
-                final Instant instant = Instant.now();
-                vehiculo.setHoraSalida(instant);
-                vehiculo.setEstado("No Disponible");
-                vehiculo.setValorPagado(obtenerValorAPagar(vehiculo, instant));
-
-                if (vehiculoDao.modificar(vehiculo)) {
-                    limpiarCampos();
-                    JOptionPane.showMessageDialog(null, "Vehiculo retirado");
-                }
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "Este vehiculo ya ha sido retirado");
-        }
+        retirarVehiculo();
         /*fechaHora = dateFormat.format(date);
 
         try {
@@ -201,6 +180,20 @@ public class PanelRetirarVehiculo extends javax.swing.JPanel {
 
     }//GEN-LAST:event_tfPlacaRetiroActionPerformed
 
+    /**
+     * Comprueba que los campos tengan la informacion correcta
+     *
+     * @return true si todo esta bien, false en caso de que no
+     */
+    private boolean validarCampos() {
+        if(tfPlacaRetiro.getText().isBlank()){
+            JOptionPane.showMessageDialog(null, "¡Campo '" + tfPlacaRetiro.getName() + "' debe estar lleno!");
+            return false;
+        }else{
+            return true;
+        }
+    }
+
     private void limpiarCampos() {
         tfPlacaRetiro.setText("");
     }
@@ -211,6 +204,29 @@ public class PanelRetirarVehiculo extends javax.swing.JPanel {
             return deltaHoras * 10;
         } else {
             return deltaHoras * 5;
+        }
+    }
+
+    private void retirarVehiculo() {
+        final Vehiculo vehiculo = vehiculoDao.obtener(tfPlacaRetiro.getText());
+        if (validarCampos() && vehiculo == null) {
+            JOptionPane.showMessageDialog(null, "¡Vehículo no encontrado. Es posible que no existe un vehículo con esa placa!");
+        } else if (vehiculo.getEstado().equals("Disponible")) {
+            int respuesta = JOptionPane.showConfirmDialog(null, "Propietario: " + vehiculo.getPropietario() + ", Tipo Vehiculo: " + vehiculo.getTipoVehiculo() + ", Fecha Entrada: " + dateFormat.format(new Date(vehiculo.getHoraEntrada().toEpochMilli())), "Confirmar Datos", JOptionPane.YES_NO_OPTION);
+
+            if (respuesta == JOptionPane.YES_OPTION) {
+                final Instant instant = Instant.now();
+                vehiculo.setHoraSalida(instant);
+                vehiculo.setEstado("No Disponible");
+                vehiculo.setValorPagado(obtenerValorAPagar(vehiculo, instant));
+
+                if (vehiculoDao.modificar(vehiculo)) {
+                    limpiarCampos();
+                    JOptionPane.showMessageDialog(null, "¡Vehículo retirado!");
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "¡Este vehículo ya ha sido retirado!");
         }
     }
 

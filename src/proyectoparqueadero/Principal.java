@@ -198,7 +198,8 @@ public class Principal extends javax.swing.JFrame {
         panelListarVehiculos.setVisible(true);
         panelingresarvehiculo.setVisible(false);
         panelretirarvehiculo.setVisible(false);
-         revalidate();
+        setLocationRelativeTo(null);
+        revalidate();
         repaint();
         
         panelListarVehiculos.rellenarTabla();

@@ -11,7 +11,6 @@ import basedatos.Database;
 import basedatos.entidades.Vehiculo;
 import basedatos.dao.VehiculoDao;
 import java.sql.Date;
-import java.sql.Timestamp;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -135,16 +134,7 @@ public class PanelIngresarVehiculo extends javax.swing.JPanel {
 
 
     private void JB_registrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_JB_registrarActionPerformed
-        if (validarCampos()) {
-            final Vehiculo v = generarVehiculo();
-            int idNuevoVehiculo = vehiculoDao.agregar(v);
-            System.out.println(idNuevoVehiculo);
-            if (idNuevoVehiculo > 0) {
-                limpiarCampos();
-                JOptionPane.showInternalMessageDialog(null, "Vehiculo registrado");
-            }
-        }
-
+        ingresarVehiculo();
         /*fechaHora = dateFormat.format(date);
 
         if (rbAuto.isSelected()) {
@@ -165,10 +155,9 @@ public class PanelIngresarVehiculo extends javax.swing.JPanel {
         clasevehiculo = "";
 
         JOptionPane.showMessageDialog(null, "Vehiculo registrado exitosamente");*/
-        
+
 //           String dest = "C:/reportes/sample.pdf";
 //        try {
-
 //            PdfWriter writer = new PdfWriter(dest);
 //            PdfDocument pdfDoc = new PdfDocument(writer);
 //            Document document = new Document(pdfDoc, PageSize.A5);
@@ -227,12 +216,16 @@ public class PanelIngresarVehiculo extends javax.swing.JPanel {
                 ((JTextField) campo).setText("");
             }
         }
+
+        if (rbMoto.isSelected()) {
+            rbMoto.setSelected(false);
+        } else {
+            rbAuto.setSelected(false);
+        }
     }
 
     /**
-     * *
      * Comprueba que los campos tengan la informacion correcta
-     *
      * @return true si todo esta bien, false en caso de que no
      */
     private boolean validarCampos() {
@@ -241,13 +234,13 @@ public class PanelIngresarVehiculo extends javax.swing.JPanel {
         for (Object campo : campos) {
             if (campo instanceof JTextField && ((JTextField) campo).getText().isBlank()) {
                 String nombreCampo = ((JTextField) campo).getName();
-                JOptionPane.showMessageDialog(null, "El campo " + nombreCampo + " debe estar lleno");
+                JOptionPane.showMessageDialog(null, "¡El campo '" + nombreCampo + "' debe estar lleno!");
                 return false;
             }
         }
 
         if (!rbMoto.isSelected() && !rbAuto.isSelected()) {
-            JOptionPane.showInternalMessageDialog(null, "Primero debe elegir el tipo de vehiculo");
+            JOptionPane.showInternalMessageDialog(null, "¡Primero debe elegir el tipo de vehículo!");
             return false;
         }
 
@@ -270,6 +263,18 @@ public class PanelIngresarVehiculo extends javax.swing.JPanel {
                 tipoVehiculo,
                 Instant.now(),
                 "Disponible");
+    }
+
+    private void ingresarVehiculo() {
+        if (validarCampos()) {
+            final Vehiculo v = generarVehiculo();
+            int idNuevoVehiculo = vehiculoDao.agregar(v);
+            System.out.println(idNuevoVehiculo);
+            if (idNuevoVehiculo > 0) {
+                limpiarCampos();
+                JOptionPane.showInternalMessageDialog(null, "¡Vehiculo registrado!");
+            }
+        }
     }
 
 
