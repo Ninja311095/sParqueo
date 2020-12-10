@@ -175,7 +175,7 @@ public class Principal extends javax.swing.JFrame {
         panelListarVehiculos.setVisible(false);
         panelretirarvehiculo.setVisible(false);
         panelingresarvehiculo.setVisible(true);
-        
+        setLocationRelativeTo(null);
         revalidate();
         repaint();
     }//GEN-LAST:event_JB_IngresarVehiculoActionPerformed
@@ -186,7 +186,8 @@ public class Principal extends javax.swing.JFrame {
         panelListarVehiculos.setVisible(false);
         panelingresarvehiculo.setVisible(false);
         panelretirarvehiculo.setVisible(true);
-         revalidate();
+        setLocationRelativeTo(null);
+        revalidate();
         repaint();
         
     }//GEN-LAST:event_JB_RetirarVActionPerformed
